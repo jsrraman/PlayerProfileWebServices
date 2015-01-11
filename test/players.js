@@ -26,7 +26,7 @@ describe("Player Profile REST APIs Unit Test Report", function() {
     it('should retrieve the profile info for player id = 8917', function(done) {
 
         request(url)
-            .get("/players?playerId=8917")
+            .get("/players?playerId=0")
             .expect(200)
             .end(function(err, res) {
                 if (err) {
