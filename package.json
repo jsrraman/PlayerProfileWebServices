@@ -5,7 +5,7 @@
   "author" : "rajaraman",
   "scripts": {
     "start": "node ./bin/www",
-    "test" : "mocha test"
+    "test": "./node_modules/.bin/mocha --recursive -R xunit test/ > test-reports.xml"
   },
   "dependencies": {
     "express": "~4.9.0",
