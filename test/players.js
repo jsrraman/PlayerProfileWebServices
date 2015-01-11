@@ -33,7 +33,7 @@ describe("Player Profile REST APIs Unit Test Report", function() {
                     throw err;
                 }
 
-                res.body.should.have.property("status", "failure");
+                res.body.should.have.property("status", "success");
                 done();
             });
     });
