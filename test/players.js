@@ -26,14 +26,14 @@ describe("Player Profile REST APIs Unit Test Report", function() {
     it('should retrieve the profile info for player id = 8917', function(done) {
 
         request(url)
-            .get("/players?playerId=0")
+            .get("/players?playerId=8917")
             .expect(200)
             .end(function(err, res) {
                 if (err) {
                     throw err;
                 }
 
-                res.body.should.have.property("status", "success");
+                res.body.should.have.property("status", "failure");
                 done();
             });
     });
