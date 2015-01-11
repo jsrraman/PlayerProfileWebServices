@@ -31,12 +31,13 @@ router.get('/players/country', function(httpReq, httpRes) {
 
     var fnResponse = {};
 
-    if ( (countryId == null) || (countryId == undefined) ||
-        (countryName == null) || (countryName == undefined) ) {
+    if (!countryId || !countryName) {
         fnResponse.status = "failure";
         fnResponse.result = "Country id or(and) name cannot be empty";
 
         httpRes.send(fnResponse);
+
+        return;
     }
 
     PlayersDataScrape.scrapeAndSavePlayerListForCountry(countryId,
@@ -60,10 +61,13 @@ router.get('/player', function(httpReq, httpRes) {
 
     var fnResponse = {};
 
-    if ( (playerId == null) || (playerId == undefined) ) {
+    if (!playerId) {
         fnResponse.status = "failure";
         fnResponse.result = "Player id cannot be empty";
+
         httpRes.send(fnResponse);
+
+        return;
     }
 
     PlayersDataScrape.scrapeAndSavePlayerProfileForPlayer(playerId, function (error, result) {

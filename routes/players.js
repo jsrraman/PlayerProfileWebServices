@@ -29,10 +29,11 @@ router.get('/', function(httpReq, httpRes) {
 
   var fnResponse = {};
 
-  if ( (playerId == null) || (playerId == undefined) ) {
+  if (!playerId) {
     fnResponse.status = "failure";
     fnResponse.result = "Player id cannot be empty";
     httpRes.send(fnResponse);
+    return;
   }
 
   db.getPlayerProfile(null, parseInt(playerId), function (error, result) {
@@ -57,10 +58,11 @@ router.get('/country', function(httpReq, httpRes) {
 
   var fnResponse = {};
 
-  if ( (countryId == null) || (countryId == undefined) ) {
+  if (!countryId) {
     fnResponse.status = "failure";
     fnResponse.result = "Country id cannot be empty";
     httpRes.send(fnResponse);
+    return;
   }
 
   db.getPlayerProfile(parseInt(countryId), null, function (error, result) {

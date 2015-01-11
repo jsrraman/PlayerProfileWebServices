@@ -79,7 +79,7 @@ PlayersDao.getCountryList = function(callback) {
             // Get the records sorted by country id
             var query = {}; // Get everything
             var projection = {_id:0}; // Don't project the _id in the result
-            var sortCriteria = {countryId:1};
+            var sortCriteria = {name:1};
 
             countryCollection.find(query, projection).sort(sortCriteria).toArray(function (err, result) {
                 if (!err) {
@@ -135,9 +135,10 @@ PlayersDao.getPlayerProfile = function(countryId, playerId, callback) {
 
             var playerCollection = db.collection('players');
 
-            var query = {};
+            // Get the records sorted by player name
+            var query = {}; // Get everything
 
-            if ( (countryId != null || countryId != undefined) ) {
+            if ( countryId ) {
                 query.countryId = countryId;
             } else {
                 query.playerId = playerId;
@@ -145,9 +146,10 @@ PlayersDao.getPlayerProfile = function(countryId, playerId, callback) {
 
             debug(query);
 
-            var projection = {_id:0}; // We don't need the _id in the result
+            var projection = {_id:0}; // Don't project the _id in the result
+            var sortCriteria = {name:1};
 
-            playerCollection.find(query, projection).toArray(function (err, result) {
+            playerCollection.find(query, projection).sort(sortCriteria).toArray(function (err, result) {
                 if (err) {
                     debug('Player profile info could not be retrieved successfully');
 
