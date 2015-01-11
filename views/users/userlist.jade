@@ -1,0 +1,11 @@
+extends ../layout
+
+block content
+    h1.
+        User List
+    ul
+        each user in userlist
+            li
+                a(href="mailto:#{user.email}")= user.username
+    h1 Add User
+    a(href="adduser")= "Add"

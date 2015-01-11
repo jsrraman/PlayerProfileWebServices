@@ -1,0 +1,9 @@
+
+[0m[0m
+[0m  Users Routing[0m
+[0m    users[0m
+    [31m  1) should return the list of the users in the system successfully[0m
+
+
+[92m [0m[32m 0 passing[0m[90m (81ms)[0m
+
