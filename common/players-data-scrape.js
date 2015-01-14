@@ -89,8 +89,7 @@ PlayersDataScrape.scrapeAndSavePlayerListForCountry = function(countryId, countr
 
   var fnResponse;
 
-  if ( (countryId == null ) || (countryId == undefined ) ||
-      (countryName == null ) || (countryName == undefined ) ) {
+  if (!countryId || !countryName) {
     fnResponse.description = "Country id or(and) name cannot be empty";
     callback(fnResponse, null);
     return;
@@ -218,7 +217,7 @@ PlayersDataScrape.scrapeAndSavePlayerProfileForPlayer = function(playerId, callb
   var countryId = "";
   var playerUrl = "";
 
-  if ((playerId == null) || (playerId == undefined)) {
+  if (!playerId) {
     fnResponse.description = "Player id cannot be empty";
     callback(fnResponse, null);
     return;
