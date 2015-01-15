@@ -134,20 +134,20 @@ PlayersDataScrape.scrapeAndSavePlayerListForCountry = function(countryId, countr
 
             if ((playerUrlData !== null) && (playerUrlData !== undefined)) {
 
-              var docPlayer = {};
+              var docPlayerProfile = {};
 
-              docPlayer.countryId = parseInt(countryId);
-              docPlayer.playerUrl = PlayersDataScrape.baseScrapeUrl + playerUrlData.attr("href");
+              docPlayerProfile.countryId = parseInt(countryId);
+              docPlayerProfile.playerUrl = PlayersDataScrape.baseScrapeUrl + playerUrlData.attr("href");
 
               var tempIndex1 = playerUrlData.attr("href").lastIndexOf('/');
               var tempIndex2 = playerUrlData.attr("href").indexOf('.html');
-              docPlayer.playerId = parseInt(playerUrlData.attr("href").substring(tempIndex1 + 1, tempIndex2));
+              docPlayerProfile.playerId = parseInt(playerUrlData.attr("href").substring(tempIndex1 + 1, tempIndex2));
 
-              docPlayer.name = playerUrlData.text();
+              docPlayerProfile.name = playerUrlData.text();
 
               //console.log(docPlayer);
 
-              docPlayerList.push(docPlayer);
+              docPlayerList.push(docPlayerProfile);
             }
           });
         });
@@ -166,20 +166,20 @@ PlayersDataScrape.scrapeAndSavePlayerListForCountry = function(countryId, countr
 
             if ((playerUrlData !== null) && (playerUrlData !== undefined)) {
 
-              var docPlayer = {};
+              var docPlayerProfile = {};
 
-              docPlayer.countryId = parseInt(countryId);
-              docPlayer.playerUrl = PlayersDataScrape.baseScrapeUrl + playerUrlData.attr("href");
+              docPlayerProfile.countryId = parseInt(countryId);
+              docPlayerProfile.playerUrl = PlayersDataScrape.baseScrapeUrl + playerUrlData.attr("href");
 
               var tempIndex1 = playerUrlData.attr("href").lastIndexOf('/');
               var tempIndex2 = playerUrlData.attr("href").indexOf('.html');
-              docPlayer.playerId = parseInt(playerUrlData.attr("href").substring(tempIndex1 + 1, tempIndex2));
+              docPlayerProfile.playerId = parseInt(playerUrlData.attr("href").substring(tempIndex1 + 1, tempIndex2));
 
-              docPlayer.name = playerUrlData.text();
+              docPlayerProfile.name = playerUrlData.text();
 
-              //console.log(docPlayer);
+              //console.log(docPlayerProfile);
 
-              docPlayerList.push(docPlayer);
+              docPlayerList.push(docPlayerProfile);
             }
           });
         });
@@ -208,9 +208,9 @@ PlayersDataScrape.scrapeAndSavePlayerListForCountry = function(countryId, countr
       });
     }
   });
-};
+}
 
-// Scrape and save player list for a particular player id
+// Scrape and save player profile for a particular player id
 PlayersDataScrape.scrapeAndSavePlayerProfileForPlayer = function(playerId, callback) {
 
   var fnResponse;
@@ -242,6 +242,122 @@ PlayersDataScrape.scrapeAndSavePlayerProfileForPlayer = function(playerId, callb
       countryId = result[0].countryId;
       playerUrl = result[0].playerUrl;
       PlayersDataScrape._scrapeAndSavePlayerProfileForPlayer(countryId, playerId, playerUrl, callback);
+    }
+  });
+}
+
+
+// Internal method to scrape and save player list for a particular country given player id, country id and
+// player url
+PlayersDataScrape._scrapeAndSavePlayerProfileForPlayer = function(countryId, playerId, playerUrl,
+                                                                  callback) {
+
+  debug("Going to get player profile for the requested player URL " + playerUrl +
+  " and store them in the database");
+
+  // Scrape the players list from a particular country
+  PlayersDataScrape.request(playerUrl, function (error, response, html) {
+    if (error) {
+      callback(error, null);
+      return;
+    } else {
+
+      debug("Got the scraped data for " + playerUrl);
+
+      // URL fetched successfully so load the html using cheerio library to give us jQuery functionality
+      var $ = PlayersDataScrape.cheerio.load(html);
+
+      var docPlayerProfile = {};
+      var docBattingAndFieldingOverallAvg = {};
+      //var docBattingStatistics = {};
+      var docBowlingOverallAvg = {};
+
+      // Update the known fields so far
+      docPlayerProfile.countryId = parseInt(countryId);
+      docPlayerProfile.playerId = parseInt(playerId);
+      docPlayerProfile.playerUrl = playerUrl;
+
+      // Get the player profile data from the loaded html data into jQuery object
+      PlayersDataScrape.extractPlayerProfileData($, docPlayerProfile,
+          docBattingAndFieldingOverallAvg, docBowlingOverallAvg);
+
+      docPlayerProfile.battingAndFieldingOverallAvg = docBattingAndFieldingOverallAvg;
+      docPlayerProfile.bowlingOverallAvg = docBowlingOverallAvg;
+
+      console.log(">>>>>>>>>>>>>>>>>>>");
+      console.log(docPlayerProfile);
+      console.log(">>>>>>>>>>>>>>>>>>>");
+
+      // Save country info to the database
+      PlayersDataScrape.db.savePlayerProfile(docPlayerProfile, function (error, result) {
+        // Send the response to the API caller
+        if (error) {
+          callback(error, null);
+          return;
+        }
+        else {
+          callback(null, null);
+          return;
+        }
+      });
+    }
+  });
+}
+
+// Extracts the player profile data from the loaded html data
+PlayersDataScrape.extractPlayerProfileData = function($, docPlayerProfile,
+                                                      docBattingAndFieldingOverallAvg, docBowlingOverallAvg) {
+
+  var key, value;
+
+  // Player's basic details
+  $("#ciHomeContentlhs > div.pnl490M > div:nth-child(2) > div:nth-child(1)").find("p").each(function () {
+    key = $(this).find("b").text();
+    value = $(this).find("span").text().trim();
+    docPlayerProfile[key] = value;
+  });
+
+  // Player's thumbnail
+  $("#ciHomeContentlhs > div.pnl490M > div:nth-child(2) > div:nth-child(2) > img").filter(function () {
+    docPlayerProfile.thumbnailUrl = PlayersDataScrape.baseScrapeUrl + $(this).attr("src");
+  });
+
+  // Batting and fielding averages
+  $("#ciHomeContentlhs > div.pnl490M > table:nth-child(4)").filter(function () {
+
+    var tempData = $(this).find(".data1 td");
+
+    var colCount = 15;
+    var overallIndex = 0;
+    var battingCategoryKey = "";
+
+    while (overallIndex < tempData.length) {
+
+      // Get the batting category key
+      if (overallIndex % colCount == 0) {
+        battingCategoryKey = tempData.eq(overallIndex++).text().trim();
+
+        // A category object (which is going to be populated below) will be named after battingCategoryKey (eg: Tests, ODIs etc)
+        var docBattingAndFieldingAvg = {};
+        docBattingAndFieldingOverallAvg[battingCategoryKey] = docBattingAndFieldingAvg;
+      }
+
+      docBattingAndFieldingAvg.Mat = tempData.eq(overallIndex++).text().trim();
+      docBattingAndFieldingAvg.Inns = tempData.eq(overallIndex++).text().trim();
+      docBattingAndFieldingAvg.NO = tempData.eq(overallIndex++).text().trim();
+      docBattingAndFieldingAvg.Runs = tempData.eq(overallIndex++).text().trim();
+      docBattingAndFieldingAvg.HS = tempData.eq(overallIndex++).text().trim();
+      docBattingAndFieldingAvg.Ave = tempData.eq(overallIndex++).text().trim();
+      docBattingAndFieldingAvg.BF = tempData.eq(overallIndex++).text().trim();
+      docBattingAndFieldingAvg.SR = tempData.eq(overallIndex++).text().trim();
+      docBattingAndFieldingAvg.Hundreds = tempData.eq(overallIndex++).text().trim();
+      docBattingAndFieldingAvg.Fifties = tempData.eq(overallIndex++).text().trim();
+      docBattingAndFieldingAvg.Fours = tempData.eq(overallIndex++).text().trim();
+      docBattingAndFieldingAvg.Sixes = tempData.eq(overallIndex++).text().trim();
+      docBattingAndFieldingAvg.Ct = tempData.eq(overallIndex++).text().trim();
+      docBattingAndFieldingAvg.St = tempData.eq(overallIndex++).text().trim();
+
+      docBattingAndFieldingOverallAvg[battingCategoryKey] = docBattingAndFieldingAvg;
     }
   });
 }
@@ -470,119 +586,5 @@ PlayersDataScrape.scrapeAndSavePlayerProfileForPlayer = function(playerId, callb
 //
 //  docBowlingAvg.odis = docOdiBowlingAvg;
 //};
-
-
-
-// Internal method to scrape and save player list for a particular country given player id, country id and
-// player url
-PlayersDataScrape._scrapeAndSavePlayerProfileForPlayer = function(countryId, playerId, playerUrl,
-                                                                  callback) {
-
-  debug("Going to get player profile for the requested player URL " + playerUrl +
-  " and store them in the database");
-
-  // Scrape the players list from a particular country
-  PlayersDataScrape.request(playerUrl, function (error, response, html) {
-    if (error) {
-      callback(error, null);
-      return;
-    } else {
-
-      debug("Got the scraped data for " + playerUrl);
-
-      // URL fetched successfully so load the html using cheerio library to give us jQuery functionality
-      var $ = PlayersDataScrape.cheerio.load(html);
-
-      var docPlayerProfile = {};
-      var docBattingAndFieldingOverallAvg = {};
-      //var docBattingStatistics = {};
-      var docBowlingOverallAvg = {};
-
-      // Update the known fields so far
-      docPlayerProfile.countryId = parseInt(countryId);
-      docPlayerProfile.playerId = parseInt(playerId);
-      docPlayerProfile.playerUrl = playerUrl;
-
-      // Get the player profile data from the loaded html data into jQuery object
-      PlayersDataScrape.extractPlayerProfileData($, docPlayerProfile,
-          docBattingAndFieldingOverallAvg, docBowlingOverallAvg);
-
-      docPlayerProfile.battingAndFieldingOverallAvg = docBattingAndFieldingOverallAvg;
-      docPlayerProfile.bowlingOverallAvg = docBowlingOverallAvg;
-
-      console.log(">>>>>>>>>>>>>>>>>>>");
-      console.log(docPlayerProfile);
-      console.log(">>>>>>>>>>>>>>>>>>>");
-
-      // Save country info to the database
-      PlayersDataScrape.db.savePlayerProfile(docPlayerProfile, function (error, result) {
-        // Send the response to the API caller
-        if (error) {
-          callback(error, null);
-          return;
-        }
-        else {
-          callback(null, null);
-          return;
-        }
-      });
-    }
-  });
-};
-
-// Extracts the player profile data from the loaded html data
-PlayersDataScrape.extractPlayerProfileData = function($, docPlayerProfile,
-                                                      docBattingAndFieldingOverallAvg, docBowlingOverallAvg) {
-
-  var key, value;
-
-  // Player's basic details
-  $("#ciHomeContentlhs > div.pnl490M > div:nth-child(2) > div:nth-child(1)").find("p").each(function () {
-
-    key = $(this).find("b").text();
-    value = $(this).find("span").text().trim();
-    docPlayerProfile[key] = value;
-
-  });
-
-  // Batting and fielding averages
-  $("#ciHomeContentlhs > div.pnl490M > table:nth-child(4)").filter(function() {
-
-    var tempData = $(this).find(".data1 td");
-
-    var colCount = 15;
-    var overallIndex = 0;
-    var battingCategoryKey = "";
-
-    while (overallIndex < tempData.length) {
-
-      // Get the batting category key
-      if (overallIndex % colCount == 0) {
-        battingCategoryKey = tempData.eq(overallIndex++).text().trim();
-
-        // A category object (which is going to be populated below) will be named after battingCategoryKey (eg: Tests, ODIs etc)
-        var docBattingAndFieldingAvg = {};
-        docBattingAndFieldingOverallAvg[battingCategoryKey] = docBattingAndFieldingAvg;
-      }
-
-      docBattingAndFieldingAvg.Mat = tempData.eq(overallIndex++).text().trim();
-      docBattingAndFieldingAvg.Inns = tempData.eq(overallIndex++).text().trim();
-      docBattingAndFieldingAvg.NO = tempData.eq(overallIndex++).text().trim();
-      docBattingAndFieldingAvg.Runs = tempData.eq(overallIndex++).text().trim();
-      docBattingAndFieldingAvg.HS = tempData.eq(overallIndex++).text().trim();
-      docBattingAndFieldingAvg.Ave = tempData.eq(overallIndex++).text().trim();
-      docBattingAndFieldingAvg.BF = tempData.eq(overallIndex++).text().trim();
-      docBattingAndFieldingAvg.SR = tempData.eq(overallIndex++).text().trim();
-      docBattingAndFieldingAvg.Hundreds = tempData.eq(overallIndex++).text().trim();
-      docBattingAndFieldingAvg.Fifties = tempData.eq(overallIndex++).text().trim();
-      docBattingAndFieldingAvg.Fours = tempData.eq(overallIndex++).text().trim();
-      docBattingAndFieldingAvg.Sixes = tempData.eq(overallIndex++).text().trim();
-      docBattingAndFieldingAvg.Ct = tempData.eq(overallIndex++).text().trim();
-      docBattingAndFieldingAvg.St = tempData.eq(overallIndex++).text().trim();
-
-      docBattingAndFieldingOverallAvg[battingCategoryKey] = docBattingAndFieldingAvg;
-    }
- });
-};
 
 module.exports = PlayersDataScrape;
