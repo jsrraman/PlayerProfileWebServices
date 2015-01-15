@@ -582,9 +582,7 @@ PlayersDataScrape.extractPlayerProfileData = function($, docPlayerProfile,
 
       docBattingAndFieldingOverallAvg[battingCategoryKey] = docBattingAndFieldingAvg;
     }
-
-    console.log("<<<<<<<<<<<<<<<<<<");
-  });
+ });
 };
 
 module.exports = PlayersDataScrape;

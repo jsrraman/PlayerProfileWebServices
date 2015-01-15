@@ -180,10 +180,6 @@ PlayersDao.savePlayerProfile = function(docPlayerProfile, callback) {
             return;
         } else {
 
-            console.log("@@@@@@@@@@@@@@@@")
-            console.log(docPlayerProfile);
-            console.log("@@@@@@@@@@@@@@@@")
-
             var playerCollection = db.collection('players');
 
             var query = {};
