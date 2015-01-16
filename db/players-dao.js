@@ -156,7 +156,6 @@ PlayersDao.getPlayerProfile = function(countryId, playerId, callback) {
                     db.close();
                     callback(err, null);
                     return;
-
                 } else {
                     debug('Player profile info retrieved successfully');
 

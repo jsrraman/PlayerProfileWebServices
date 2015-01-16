@@ -216,6 +216,7 @@ PlayersDataScrape.scrapeAndSavePlayerProfileForPlayer = function(playerId, callb
   var fnResponse;
   var countryId = "";
   var playerUrl = "";
+  var playerName = "";
 
   if (!playerId) {
     fnResponse.description = "Player id cannot be empty";
@@ -241,7 +242,13 @@ PlayersDataScrape.scrapeAndSavePlayerProfileForPlayer = function(playerId, callb
 
       countryId = result[0].countryId;
       playerUrl = result[0].playerUrl;
-      PlayersDataScrape._scrapeAndSavePlayerProfileForPlayer(countryId, playerId, playerUrl, callback);
+      playerName = result[0].name;
+
+      console.log(">>>>>>>>>>");
+      console.log(playerName);
+      console.log("<<<<<<<<<<");
+
+      PlayersDataScrape._scrapeAndSavePlayerProfileForPlayer(countryId, playerId, playerUrl, playerName, callback);
     }
   });
 }
@@ -249,7 +256,7 @@ PlayersDataScrape.scrapeAndSavePlayerProfileForPlayer = function(playerId, callb
 
 // Internal method to scrape and save player list for a particular country given player id, country id and
 // player url
-PlayersDataScrape._scrapeAndSavePlayerProfileForPlayer = function(countryId, playerId, playerUrl,
+PlayersDataScrape._scrapeAndSavePlayerProfileForPlayer = function(countryId, playerId, playerUrl, playerName,
                                                                   callback) {
 
   debug("Going to get player profile for the requested player URL " + playerUrl +
@@ -269,24 +276,24 @@ PlayersDataScrape._scrapeAndSavePlayerProfileForPlayer = function(countryId, pla
 
       var docPlayerProfile = {};
       var docBattingAndFieldingOverallAvg = {};
-      //var docBattingStatistics = {};
       var docBowlingOverallAvg = {};
 
       // Update the known fields so far
       docPlayerProfile.countryId = parseInt(countryId);
       docPlayerProfile.playerId = parseInt(playerId);
       docPlayerProfile.playerUrl = playerUrl;
+      docPlayerProfile.name = playerName;
 
       // Get the player profile data from the loaded html data into jQuery object
       PlayersDataScrape.extractPlayerProfileData($, docPlayerProfile,
-          docBattingAndFieldingOverallAvg, docBowlingOverallAvg);
+                                                        docBattingAndFieldingOverallAvg, docBowlingOverallAvg);
 
       docPlayerProfile.battingAndFieldingOverallAvg = docBattingAndFieldingOverallAvg;
       docPlayerProfile.bowlingOverallAvg = docBowlingOverallAvg;
 
-      console.log(">>>>>>>>>>>>>>>>>>>");
-      console.log(docPlayerProfile);
-      console.log(">>>>>>>>>>>>>>>>>>>");
+      //console.log(">>>>>>>>>>>>>>>>>>>");
+      //console.log(docPlayerProfile);
+      //console.log(">>>>>>>>>>>>>>>>>>>");
 
       // Save country info to the database
       PlayersDataScrape.db.savePlayerProfile(docPlayerProfile, function (error, result) {
@@ -312,9 +319,11 @@ PlayersDataScrape.extractPlayerProfileData = function($, docPlayerProfile,
 
   // Player's basic details
   $("#ciHomeContentlhs > div.pnl490M > div:nth-child(2) > div:nth-child(1)").find("p").each(function () {
+
     key = $(this).find("b").text();
     value = $(this).find("span").text().trim();
     docPlayerProfile[key] = value;
+
   });
 
   // Player's thumbnail
