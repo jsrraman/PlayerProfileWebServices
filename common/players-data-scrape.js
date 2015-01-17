@@ -277,6 +277,7 @@ PlayersDataScrape._scrapeAndSavePlayerProfileForPlayer = function(countryId, pla
       var docPlayerProfile = {};
       var docBattingAndFieldingOverallAvg = {};
       var docBowlingOverallAvg = {};
+      var docCareerStats = {};
 
       // Update the known fields so far
       docPlayerProfile.countryId = parseInt(countryId);
@@ -286,14 +287,18 @@ PlayersDataScrape._scrapeAndSavePlayerProfileForPlayer = function(countryId, pla
 
       // Get the player profile data from the loaded html data into jQuery object
       PlayersDataScrape.extractPlayerProfileData($, docPlayerProfile,
-                                                        docBattingAndFieldingOverallAvg, docBowlingOverallAvg);
+                                                        docBattingAndFieldingOverallAvg, docBowlingOverallAvg, docCareerStats);
 
-      docPlayerProfile.battingAndFieldingOverallAvg = docBattingAndFieldingOverallAvg;
-      docPlayerProfile.bowlingOverallAvg = docBowlingOverallAvg;
+      //docPlayerProfile.battingAndFieldingOverallAvg = docBattingAndFieldingOverallAvg;
+      //docPlayerProfile.bowlingOverallAvg = docBowlingOverallAvg;
 
-      //console.log(">>>>>>>>>>>>>>>>>>>");
-      //console.log(docPlayerProfile);
-      //console.log(">>>>>>>>>>>>>>>>>>>");
+      docPlayerProfile["Batting Avg"] = docBattingAndFieldingOverallAvg;
+      docPlayerProfile["Bowling Avg"] = docBowlingOverallAvg;
+      docPlayerProfile["Career Stats"] = docCareerStats;
+
+      console.log(">>>>>>>>>>>>>>>>>>>");
+      console.log(docPlayerProfile);
+      console.log(">>>>>>>>>>>>>>>>>>>");
 
       // Save country info to the database
       PlayersDataScrape.db.savePlayerProfile(docPlayerProfile, function (error, result) {
@@ -313,7 +318,8 @@ PlayersDataScrape._scrapeAndSavePlayerProfileForPlayer = function(countryId, pla
 
 // Extracts the player profile data from the loaded html data
 PlayersDataScrape.extractPlayerProfileData = function($, docPlayerProfile,
-                                                      docBattingAndFieldingOverallAvg, docBowlingOverallAvg) {
+                                                      docBattingAndFieldingOverallAvg, docBowlingOverallAvg,
+                                                      docCareerStats) {
 
   var key, value;
 
@@ -368,6 +374,65 @@ PlayersDataScrape.extractPlayerProfileData = function($, docPlayerProfile,
 
       docBattingAndFieldingOverallAvg[battingCategoryKey] = docBattingAndFieldingAvg;
     }
+  });
+
+  // Bowling averages
+  $("#ciHomeContentlhs > div.pnl490M > table:nth-child(6)").filter(function () {
+
+    var tempData = $(this).find(".data1 td");
+
+    var colCount = 14;
+    var overallIndex = 0;
+    var bowlingCategoryKey = "";
+
+    while (overallIndex < tempData.length) {
+
+      // Get the batting category key
+      if (overallIndex % colCount == 0) {
+        bowlingCategoryKey = tempData.eq(overallIndex++).text().trim();
+
+        // A category object (which is going to be populated below) will be named after battingCategoryKey (eg: Tests, ODIs etc)
+        var docBowlingAvg = {};
+        docBowlingOverallAvg[bowlingCategoryKey] = docBowlingAvg;
+      }
+
+      docBowlingAvg.Mat = tempData.eq(overallIndex++).text().trim();
+      docBowlingAvg.Inns = tempData.eq(overallIndex++).text().trim();
+      docBowlingAvg.Balls = tempData.eq(overallIndex++).text().trim();
+      docBowlingAvg.Runs = tempData.eq(overallIndex++).text().trim();
+      docBowlingAvg.Wkts = tempData.eq(overallIndex++).text().trim();
+      docBowlingAvg.BBI = tempData.eq(overallIndex++).text().trim();
+      docBowlingAvg.BBM = tempData.eq(overallIndex++).text().trim();
+      docBowlingAvg.Ave = tempData.eq(overallIndex++).text().trim();
+      docBowlingAvg.Econ = tempData.eq(overallIndex++).text().trim();
+      docBowlingAvg.SR = tempData.eq(overallIndex++).text().trim();
+      docBowlingAvg.FourWkts = tempData.eq(overallIndex++).text().trim();
+      docBowlingAvg.FiveWkts = tempData.eq(overallIndex++).text().trim();
+      docBowlingAvg.TenWkts = tempData.eq(overallIndex++).text().trim();
+
+      docBowlingOverallAvg[bowlingCategoryKey] = docBowlingAvg;
+    }
+  });
+
+  // Career statistics
+  $("#ciHomeContentlhs > div.pnl490M > table:nth-child(8)").filter(function () {
+
+    $(".data2").each(function () {
+
+      var tempData = $(this);
+      var tempData1 = tempData.find("td");
+
+      key = tempData1.eq(0).text().trim();
+      value = tempData1.eq(1).text().trim();
+
+      //console.log("%%%%%%%%%%%%%%%")
+      //console.log("key->" + key);
+      //console.log("value->" + value);
+      //console.log("%%%%%%%%%%%%%%%")
+
+      // Add the career statistics to the docPlayerProfile object
+      docCareerStats[key] = value;
+    });
   });
 }
 
