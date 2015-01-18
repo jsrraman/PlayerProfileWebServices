@@ -244,9 +244,9 @@ PlayersDataScrape.scrapeAndSavePlayerProfileForPlayer = function(playerId, callb
       playerUrl = result[0].playerUrl;
       playerName = result[0].name;
 
-      console.log(">>>>>>>>>>");
-      console.log(playerName);
-      console.log("<<<<<<<<<<");
+      //console.log(">>>>>>>>>>");
+      //console.log(playerName);
+      //console.log("<<<<<<<<<<");
 
       PlayersDataScrape._scrapeAndSavePlayerProfileForPlayer(countryId, playerId, playerUrl, playerName, callback);
     }
@@ -296,9 +296,9 @@ PlayersDataScrape._scrapeAndSavePlayerProfileForPlayer = function(countryId, pla
       docPlayerProfile["Bowling Avg"] = docBowlingOverallAvg;
       docPlayerProfile["Career Stats"] = docCareerStats;
 
-      console.log(">>>>>>>>>>>>>>>>>>>");
-      console.log(docPlayerProfile);
-      console.log(">>>>>>>>>>>>>>>>>>>");
+      //console.log(">>>>>>>>>>>>>>>>>>>");
+      //console.log(docPlayerProfile);
+      //console.log(">>>>>>>>>>>>>>>>>>>");
 
       // Save country info to the database
       PlayersDataScrape.db.savePlayerProfile(docPlayerProfile, function (error, result) {
