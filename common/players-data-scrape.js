@@ -384,8 +384,6 @@ PlayersDataScrape.extractPlayerProfileData = function($, docPlayerProfile,
 
   docPlayerProfile.thumbnailUrl = PlayersDataScrape.baseScrapeUrl + thumbnailUrl;
 
-
-<<<<<<< HEAD
   // Batting and fielding averages
 
   // For reference*******Don't uncomment this**************
@@ -470,26 +468,6 @@ PlayersDataScrape.extractPlayerProfileData = function($, docPlayerProfile,
   docOdiBowlingAvg.tenWktsInMatch = odiBowlingAvgData.eq(13).text().trim();
 
   docBowlingAvg.odis = docOdiBowlingAvg;
-=======
-      docBattingAndFieldingAvg.Mat = tempData.eq(overallIndex++).text().trim();
-      docBattingAndFieldingAvg.Inns = tempData.eq(overallIndex++).text().trim();
-      docBattingAndFieldingAvg.NO = tempData.eq(overallIndex++).text().trim();
-      docBattingAndFieldingAvg.Runs = tempData.eq(overallIndex++).text().trim();
-      docBattingAndFieldingAvg.HS = tempData.eq(overallIndex++).text().trim();
-      docBattingAndFieldingAvg.Ave = tempData.eq(overallIndex++).text().trim();
-      docBattingAndFieldingAvg.BF = tempData.eq(overallIndex++).text().trim();
-      docBattingAndFieldingAvg.SR = tempData.eq(overallIndex++).text().trim();
-      docBattingAndFieldingAvg.Hundreds = tempData.eq(overallIndex++).text().trim();
-      docBattingAndFieldingAvg.Fifties = tempData.eq(overallIndex++).text().trim();
-      docBattingAndFieldingAvg.Fours = tempData.eq(overallIndex++).text().trim();
-      docBattingAndFieldingAvg.Sixes = tempData.eq(overallIndex++).text().trim();
-      docBattingAndFieldingAvg.Ct = tempData.eq(overallIndex++).text().trim();
-      docBattingAndFieldingAvg.St = tempData.eq(overallIndex++).text().trim();
-
-      docBattingAndFieldingOverallAvg[battingCategoryKey] = docBattingAndFieldingAvg;
-    }
- });
->>>>>>> 320166d... Removed unnecessary files
 };
 
 module.exports = PlayersDataScrape;
