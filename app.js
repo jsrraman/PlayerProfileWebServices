@@ -4,17 +4,33 @@ var favicon = require('serve-favicon');
 var logger = require('morgan');
 var cookieParser = require('cookie-parser');
 var bodyParser = require('body-parser');
+var cors = require('cors');
 
 var app = express();
 
+// You can use either of the following two methods to enable CORS
+
+// ******************************************************************
+// Method 1 - Manually tweak the response - Not recommended but works
+// ******************************************************************
 // Note: This below response header appending needs to be at the beginning to enable
 // CORS (Cross Origin Resource Sharing for all domains). Otherwise CORS will not be enabled.
 // Basically this intercepts the request and add the required header in the response
-app.use(function (req, res, next) {
-    res.header("Access-Control-Allow-Origin", "*");
-    res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept");
-    next();
-});
+//app.use(function (req, res, next) {
+//    res.header("Access-Control-Allow-Origin", "*");
+//    res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept");
+//    next();
+//});
+
+// ******************************************************************
+// Method 2 - Recommended
+// ******************************************************************
+// Use npm module 'cors' to enable the CORS for the requests coming from localhost only
+var corsOptions = {
+    origin: 'http://localhost:4000'
+};
+
+app.use(cors(corsOptions));
 
 // view engine setup
 app.set('views', path.join(__dirname, 'views'));
